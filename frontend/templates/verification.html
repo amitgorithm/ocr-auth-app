@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="form-container result-container">
+        <h1>Verification Status</h1>
+        
+        <div class="status-item">
+            <span>Full Name Match:</span>
+            {% if results.name_verified %}
+                <span class="status-yes">✔ Yes, name matches the document.</span>
+            {% else %}
+                <span class="status-no">✖ No, name does not match.</span>
+            {% endif %}
+        </div>
+
+        <div class="status-item">
+            <span>Date of Birth Match:</span>
+            {% if results.dob_verified %}
+                <span class="status-yes">✔ Yes, D.O.B matches the document.</span>
+            {% else %}
+                <span class="status-no">✖ No, D.O.B does not match.</span>
+            {% endif %}
+        </div>
+        
+        <div class="status-item">
+            <span>ID Number Match:</span>
+             {% if results.id_verified %}
+                <span class="status-yes">✔ Yes, ID Number is verified.</span>
+            {% else %}
+                <span class="status-no">✖ No, ID Number does not match.</span>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        {% if results.overall_status %}
+            <h2 class="success-message">🎉 You are successfully registered!</h2>
+        {% else %}
+            <h2 class="failure-message">Registration failed. Please correct your details.</h2>
+            <div class="buttons">
+                <button onclick="history.back()" class="btn-register">Edit Details</button>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

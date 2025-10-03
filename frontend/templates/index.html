@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Authentication</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Identity Verification</h1>
+        <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
+            
+            <label for="fullName">Enter Full Name (as on your ID card)</label>
+            <input type="text" id="fullName" name="fullName" pattern="[a-zA-Z\s]+" title="Only alphabets and spaces are allowed" required>
+            
+            <label for="phone">Enter Your 10-digit Phone Number</label>
+            <input type="tel" id="phone" name="phone" pattern="\d{10}" title="Must be exactly 10 digits" required>
+
+            <label for="dob">Enter D.O.B in the format DD/MM/YYYY</label>
+            <input type="date" id="dob" name="dob" required>
+
+            <label for="age">Enter Your Age</label>
+            <input type="number" id="age" name="age" min="16" max="90" required>
+            
+            <fieldset>
+                <legend>Select Identification Card Type</legend>
+                <input type="radio" id="aadhar" name="id_type" value="Aadhar" checked>
+                <label for="aadhar">Aadhar Card</label>
+                <input type="radio" id="pan" name="id_type" value="PAN">
+                <label for="pan">PAN Card</label>
+            </fieldset>
+
+            <div id="aadhar_fields">
+                <label for="aadhar_number">Enter your 12-digit Aadhar Number</label>
+                <input type="text" id="aadhar_number" name="aadhar_number" pattern="\d{12}" title="Must be exactly 12 digits">
+                <label for="id_photo_aadhar">Upload a photo of your Aadhar Card</label>
+                <input type="file" id="id_photo_aadhar" name="id_photo" accept="image/*">
+            </div>
+
+            <div id="pan_fields" style="display: none;">
+                <label for="pan_number">Enter your 10-character PAN Number</label>
+                <input type="text" id="pan_number" name="pan_number" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" title="Must be in the format ABCDE1234F">
+                <label for="id_photo_pan">Upload a photo of your PAN Card</label>
+                <input type="file" id="id_photo_pan" name="id_photo_pan" accept="image/*" disabled>
+            </div>
+            
+            <div class="buttons">
+                <button type="submit" class="btn-register">Register</button>
+                <button type="reset" class="btn-reset">Reset Form</button>
+            </div>
+
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

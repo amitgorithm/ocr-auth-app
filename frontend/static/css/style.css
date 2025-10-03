@@ -1,0 +1,125 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 20px;
+}
+
+.form-container {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+label, legend {
+    display: block;
+    text-align: left;
+    margin-top: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Important for padding */
+}
+
+fieldset {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    text-align: left;
+}
+
+fieldset input[type="radio"] {
+    margin-right: 5px;
+}
+
+fieldset label {
+    display: inline;
+    margin-right: 20px;
+}
+
+.buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-around;
+}
+
+button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-register {
+    background-color: #0056b3; /* Navy Blue */
+}
+
+.btn-register:hover {
+    background-color: #003d82;
+}
+
+.btn-reset {
+    background-color: #6c757d;
+}
+
+.btn-reset:hover {
+    background-color: #5a6268;
+}
+
+/* Verification Page Styles */
+.result-container {
+    text-align: left;
+}
+.status-item {
+    padding: 10px 0;
+    font-size: 1.1em;
+    border-bottom: 1px solid #eee;
+}
+.status-yes {
+    color: #28a745;
+    font-weight: bold;
+}
+.status-no {
+    color: #dc3545;
+    font-weight: bold;
+}
+.success-message {
+    color: #28a745;
+    text-align: center;
+}
+.failure-message {
+    color: #dc3545;
+    text-align: center;
+}
+hr {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
