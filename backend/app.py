@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import pytesseract
 from PIL import Image
+from flask_migrate import Migrate
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,6 +35,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize Database
 db = SQLAlchemy(app)
+
+# Add this line
+migrate = Migrate(app, db)
 
 # --- Database Model ---
 class User(db.Model):
