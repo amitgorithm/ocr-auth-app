@@ -142,10 +142,26 @@ def register():
     extracted_details = extract_details_from_text(ocr_text, id_type)
 
     # 4. Perform Verification
-    # Note: Name matching is simplified (case-insensitive substring check)
+    
+    # --- Normalize DOB from OCR for comparison ---
+    ocr_dob_str = extracted_details.get('dob')
+    normalized_ocr_dob_for_comparison = None
+    if ocr_dob_str:
+        try:
+            # Parse the OCR's DD/MM/YYYY date
+            ocr_date_obj = datetime.strptime(ocr_dob_str, '%d/%m/%Y').date()
+            # Reformat it to YYYY-MM-DD to match the form's input format
+            normalized_ocr_dob_for_comparison = ocr_date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            # This handles cases where OCR might extract a badly formatted date
+            normalized_ocr_dob_for_comparison = None
+
+    # --- Run all comparisons ---
     name_verified = full_name.lower() in ocr_text.lower()
-    dob_verified = dob_str == extracted_details.get('dob')
+    # Compare the form's date string with our newly normalized OCR date string
+    dob_verified = (dob_str == normalized_ocr_dob_for_comparison)
     id_verified = id_number_input == extracted_details.get('id_number')
+    
 
     # 5. Store data in the database
     dob_obj = datetime.strptime(dob_str, '%Y-%m-%d').date()
