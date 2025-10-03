@@ -169,10 +169,24 @@ def register():
     db.session.commit()
 
     # 6. Store data in a JSON file (as requested)
-    user_data_for_json = new_user.__dict__
-    user_data_for_json.pop('_sa_instance_state', None) # Remove SQLAlchemy state
-    user_data_for_json['dob'] = user_data_for_json['dob'].isoformat()
-    user_data_for_json['registration_timestamp'] = user_data_for_json['registration_timestamp'].isoformat()
+    user_data_for_json = {
+    "id": new_user.id,
+    "full_name": new_user.full_name,
+    "phone_number": new_user.phone_number,
+    "dob": new_user.dob.isoformat(),
+    "age": new_user.age,
+    "id_type": new_user.id_type,
+    "id_number_input": new_user.id_number_input,
+    "image_filename": new_user.image_filename,
+    "ocr_extracted_text": new_user.ocr_extracted_text,
+    "ocr_extracted_name": new_user.ocr_extracted_name,
+    "ocr_extracted_dob": new_user.ocr_extracted_dob,
+    "ocr_extracted_id_number": new_user.ocr_extracted_id_number,
+    "name_verified": new_user.name_verified,
+    "dob_verified": new_user.dob_verified,
+    "id_verified": new_user.id_verified,
+    "registration_timestamp": new_user.registration_timestamp.isoformat()
+}
     
     try:
         with open('registrations.json', 'r+') as f:
