@@ -74,42 +74,61 @@ def perform_ocr(image_path):
         print(f"Error during OCR: {e}")
         return ""
 
+#
+# REPLACE the old function with this new one
+
 def extract_details_from_text(text, id_type):
-    """Uses regex to find Name, DOB, and ID numbers from OCR text."""
-    details = {
-        'name': None,
-        'dob': None,
-        'id_number': None
-    }
-    
-    # Regex for Aadhaar (12 digits, can have spaces)
-    aadhaar_regex = r'\b\d{4}\s?\d{4}\s?\d{4}\b'
-    # Regex for PAN (10-char alphanumeric: ABCDE1234F)
+    """Uses regex and card-specific heuristics to find details from OCR text."""
+    details = {'name': None, 'dob': None, 'id_number': None}
+
+    # --- Universal Regexes ---
     pan_regex = r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b'
-    # Regex for DOB (DD/MM/YYYY)
+    aadhaar_regex = r'\b\d{4}\s?\d{4}\s?\d{4}\b'
     dob_regex = r'\b(\d{2}/\d{2}/\d{4})\b'
 
-    if id_type.lower() == 'aadhar':
-        match = re.search(aadhaar_regex, text)
-        if match:
-            details['id_number'] = match.group(0).replace(" ", "")
-    elif id_type.lower() == 'pan':
-        match = re.search(pan_regex, text)
-        if match:
-            details['id_number'] = match.group(0)
+    # --- ID Number Extraction ---
+    if id_type.lower() == 'pan':
+        pan_match = re.search(pan_regex, text)
+        if pan_match:
+            details['id_number'] = pan_match.group(0)
+    elif id_type.lower() == 'aadhar':
+        aadhaar_match = re.search(aadhaar_regex, text)
+        if aadhaar_match:
+            details['id_number'] = aadhaar_match.group(0).replace(" ", "")
 
+    # --- DOB Extraction ---
+    # Find any date in DD/MM/YYYY format
     dob_match = re.search(dob_regex, text)
     if dob_match:
         details['dob'] = dob_match.group(1)
 
-    # Name extraction is less reliable; here we just look for lines with alphabetic characters
-    # A simple approach could be to find the line containing 'Name' if present
-    lines = text.split('\n')
-    for line in lines:
-        if "Name" in line and len(line.split()) > 1:
-             details['name'] = " ".join(line.split()[1:])
-             break
-             
+    # --- Name Extraction (using card-specific heuristics) ---
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    if id_type.lower() == 'pan':
+        # For PAN cards, the name is typically the line before "Father's Name"
+        try:
+            father_name_index = -1
+            for i, line in enumerate(lines):
+                if "Father's Name" in line:
+                    father_name_index = i
+                    break
+            if father_name_index > 0:
+                details['name'] = lines[father_name_index - 1]
+        except (ValueError, IndexError):
+            pass # Heuristic failed, will rely on the generic name check later
+    elif id_type.lower() == 'aadhar':
+            # For Aadhaar, the name is often the line before the line containing the DOB
+            try:
+                dob_line_index = -1
+                for i, line in enumerate(lines):
+                    if 'DOB' in line or re.search(dob_regex, line):
+                        dob_line_index = i
+                        break
+                if dob_line_index > 0:
+                    details['name'] = lines[dob_line_index - 1]
+            except (ValueError, IndexError):
+                pass # Heuristic failed
+
     return details
 
 
@@ -157,7 +176,11 @@ def register():
             normalized_ocr_dob_for_comparison = None
 
     # --- Run all comparisons ---
-    name_verified = full_name.lower() in ocr_text.lower()
+    # name_verified = full_name.lower() in ocr_text.lower()
+
+    submitted_name_parts = full_name.lower().split()
+    name_verified = all(part in ocr_text.lower() for part in submitted_name_parts)
+
     # Compare the form's date string with our newly normalized OCR date string
     dob_verified = (dob_str == normalized_ocr_dob_for_comparison)
     id_verified = id_number_input == extracted_details.get('id_number')
