@@ -77,35 +77,39 @@ def perform_ocr(image_path):
 #
 # REPLACE the old function with this new one
 
+#
+# REPLACE the old function in backend/app.py with this new one
+#
 def extract_details_from_text(text, id_type):
-    """Uses regex and card-specific heuristics to find details from OCR text."""
+    """Uses regex and card-specific landmarks to find details from OCR text."""
     details = {'name': None, 'dob': None, 'id_number': None}
-
-    # --- Universal Regexes ---
-    pan_regex = r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b'
-    aadhaar_regex = r'\b\d{4}\s?\d{4}\s?\d{4}\b'
-    dob_regex = r'\b(\d{2}/\d{2}/\d{4})\b'
-
-    # --- ID Number Extraction ---
-    if id_type.lower() == 'pan':
-        pan_match = re.search(pan_regex, text)
-        if pan_match:
-            details['id_number'] = pan_match.group(0)
-    elif id_type.lower() == 'aadhar':
-        aadhaar_match = re.search(aadhaar_regex, text)
-        if aadhaar_match:
-            details['id_number'] = aadhaar_match.group(0).replace(" ", "")
-
-    # --- DOB Extraction ---
-    # Find any date in DD/MM/YYYY format
-    dob_match = re.search(dob_regex, text)
-    if dob_match:
-        details['dob'] = dob_match.group(1)
-
-    # --- Name Extraction (using card-specific heuristics) ---
     lines = [line.strip() for line in text.split('\n') if line.strip()]
+
     if id_type.lower() == 'pan':
-        # For PAN cards, the name is typically the line before "Father's Name"
+        # More forgiving regex without word boundaries
+        pan_regex = r'[A-Z]{5}[0-9]{4}[A-Z]{1}'
+        dob_regex = r'(\d{2}/\d{2}/\d{4})'
+
+        # --- PAN Number Extraction ---
+        # It's often on a short, prominent line.
+        for line in lines:
+            match = re.search(pan_regex, line)
+            # Check if the line almost exclusively contains the PAN
+            if match and len(line) < 15:
+                details['id_number'] = match.group(0)
+                break
+        
+        # --- DOB Extraction (Landmark-based) ---
+        # Find the line with "Date of Birth" and then find the date on that line.
+        for line in lines:
+            if 'Date of Birth' in line or 'Birth' in line:
+                match = re.search(dob_regex, line)
+                if match:
+                    details['dob'] = match.group(0)
+                    break # Stop once found
+        
+        # --- Name Extraction (Heuristic) ---
+        # The user's name is typically the line before "Father's Name".
         try:
             father_name_index = -1
             for i, line in enumerate(lines):
@@ -113,22 +117,37 @@ def extract_details_from_text(text, id_type):
                     father_name_index = i
                     break
             if father_name_index > 0:
-                details['name'] = lines[father_name_index - 1]
+                # Check if the line above is likely a name (all caps)
+                potential_name = lines[father_name_index - 1]
+                if potential_name.isupper():
+                    details['name'] = potential_name
         except (ValueError, IndexError):
-            pass # Heuristic failed, will rely on the generic name check later
-    elif id_type.lower() == 'aadhar':
-            # For Aadhaar, the name is often the line before the line containing the DOB
-            try:
-                dob_line_index = -1
-                for i, line in enumerate(lines):
-                    if 'DOB' in line or re.search(dob_regex, line):
-                        dob_line_index = i
-                        break
-                if dob_line_index > 0:
-                    details['name'] = lines[dob_line_index - 1]
-            except (ValueError, IndexError):
-                pass # Heuristic failed
+            pass # Heuristic failed
 
+    elif id_type.lower() == 'aadhar':
+        # The existing Aadhaar logic is working, so we keep it.
+        aadhaar_regex = r'\b\d{4}\s?\d{4}\s?\d{4}\b'
+        dob_regex = r'\b(\d{2}/\d{2}/\d{4})\b'
+        
+        aadhaar_match = re.search(aadhaar_regex, text)
+        if aadhaar_match:
+            details['id_number'] = aadhaar_match.group(0).replace(" ", "")
+        
+        dob_match = re.search(dob_regex, text)
+        if dob_match:
+            details['dob'] = dob_match.group(1)
+        
+        try:
+            dob_line_index = -1
+            for i, line in enumerate(lines):
+                if 'DOB' in line or re.search(dob_regex, line):
+                    dob_line_index = i
+                    break
+            if dob_line_index > 0:
+                details['name'] = lines[dob_line_index - 1]
+        except (ValueError, IndexError):
+            pass
+    
     return details
 
 
