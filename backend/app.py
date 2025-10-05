@@ -2,6 +2,7 @@ import os
 import re
 import json
 from datetime import datetime
+import cv2 
 from flask import Flask, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
@@ -65,12 +66,29 @@ class User(db.Model):
         return f'<User {self.full_name}>'
 
 # --- OCR and Verification Logic ---
+# backend/app.py
+
 def perform_ocr(image_path):
-    """Performs OCR on an image and extracts text."""
+    """
+    Performs OCR on an image after cleaning it to improve accuracy.
+    """
     try:
-        image = Image.open(image_path)
-        text = pytesseract.image_to_string(image)
+        # 1. Read the image with OpenCV
+        image = cv2.imread(image_path)
+
+        # 2. Convert to grayscale
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # 3. Apply a binary threshold to get a black and white image
+        _, threshold_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # 4. Perform OCR on the cleaned image, specifying languages
+        # Tell Tesseract to look for both English ('eng') and Hindi ('hin')
+        custom_config = r'--oem 3 --psm 6 -l eng+hin'
+        text = pytesseract.image_to_string(threshold_image, config=custom_config)
+
         return text
+
     except Exception as e:
         print(f"Error during OCR: {e}")
         return ""
