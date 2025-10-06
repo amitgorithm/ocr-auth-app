@@ -84,7 +84,7 @@ def perform_ocr(image_path):
 
         # 4. Perform OCR on the cleaned image, specifying languages
         # Tell Tesseract to look for both English ('eng') and Hindi ('hin')
-        custom_config = r'--oem 3 --psm 6 -l eng+hin'
+        custom_config = r'--oem 3 --psm 3 -l eng+hin'
         text = pytesseract.image_to_string(threshold_image, config=custom_config)
 
         return text
@@ -196,6 +196,11 @@ def register():
 
     # 3. Perform OCR
     ocr_text = perform_ocr(image_path)
+    # --- ADD THIS DEBUG BLOCK ---
+    print("--- OCR DEBUG ---")
+    print("Raw extracted text from Tesseract:")
+    print(ocr_text)
+    print("--- END OCR DEBUG ---")
     extracted_details = extract_details_from_text(ocr_text, id_type)
 
     # 4. Perform Verification
